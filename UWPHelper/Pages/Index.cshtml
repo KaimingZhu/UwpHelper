@@ -1,0 +1,89 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@if (null != TempData["alertMessage"])
+{
+    <script type="text/javascript">
+       alert("@TempData["alertMessage"]");
+    </script>
+}
+
+<style>
+    #main {
+        height: 300px;
+        width: 100%;
+    }
+
+    #left {
+        float: left;
+        height: auto;
+        width: 50%;
+    }
+
+    #right {
+        float: left;
+        height: auto;
+        width: 50%;
+    }
+</style>
+
+<form method="post">
+    <div id="main">
+        <div id="left" class="form-group">
+            <textarea id="SearchCode" name="SearchCode" asp-for="SearchCode" placeholder="Input Your Code Here..." cols="60" rows="12" style="margin-left:40px;min-height:100px" autofocus="autofocus"></textarea>
+        </div>
+        <div id="right">
+            <div style="float:left" class="container">
+                <img style="float:left;height:20px;margin-top:3px;margin-right:5px" src="~/history.png" />
+                <h5>History</h5>
+                <hr style="color:gainsboro;width:570px" />
+                <div class="form-group">
+                    <table class="table">
+                        <tbody>
+                            @foreach (var item in Model.HistoryData)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Data)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div style="margin-top:30px;text-align:center">
+        <input type="submit" value="Check it!" class="btn btn-primary" />
+    </div>
+</form>
+
+<div style="position:absolute;bottom:60px">
+    <div style="float:left;margin-left:30px" class="text-muted">
+        <p>Maybe you Want :</p>
+    </div>
+    <div style="float:left;margin-left:15px">
+        <a style="color:blue">MediaPlayer</a>
+    </div>
+    <div style="float:left;margin-left:15px">
+        <a style="color:blue">Carema</a>
+    </div>
+    <div style="float:left;margin-left:15px">
+        <a style="color:blue">Map</a>
+    </div>
+    <div style="float:left;margin-left:15px">
+        <a style="color:blue">RichTextBox</a>
+    </div>
+    <div style="float:left;margin-left:15px">
+        <a style="color:blue">DependInjection</a>
+    </div>
+</div>
+
+

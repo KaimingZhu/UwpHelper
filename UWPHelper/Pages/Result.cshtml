@@ -1,0 +1,41 @@
+﻿@page
+@model UWPHelper.Pages.Shared.ResultModel
+@{
+    ViewData["Title"] = "Result";
+}
+
+<style>
+    #main {
+        height: auto;
+        width: 100%;
+    }
+
+    #left {
+        float: left;
+        height: auto;
+        width: 50%;
+    }
+
+    #right {
+        float: left;
+        height: auto;
+        width: 50%;
+    }
+</style>
+
+<!-- 此处应该有一个左右分区效果，左边是代码，右边是注释字体 -->
+
+<div id="main">
+    <div id="left">
+        @Html.DisplayFor(Model => Model.SearchCode);
+    </div>
+    <div id="right">
+        <p>嘻嘻嘻</p>
+    </div>
+</div>
+
+<div id="main">
+    <form method="post">
+        <input style="margin-left:40%;margin-top:50px;text-align:center" type="submit" value="Back" class="btn btn-primary" />
+    </form>
+</div>
