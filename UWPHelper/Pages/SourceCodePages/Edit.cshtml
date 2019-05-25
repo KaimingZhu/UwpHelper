@@ -1,0 +1,48 @@
+﻿@page
+@model UWPHelper.Pages.SourceCodePages.EditModel
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+
+    #main {
+        margin-left: 15%;
+        margin-top: 20px;
+        float: left;
+        width: 70%;
+        margin-right: 15%;
+    }
+
+</style>
+
+<div id="main">
+    <h2>Edit</h2>
+    <h4>SourceCode</h4>
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="sourceCodeForDisPlay.Name" class="control-label"></label>
+                    <input asp-for="sourceCodeForDisPlay.Name" class="form-control" />
+                    <span asp-validation-for="sourceCodeForDisPlay.Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="sourceCodeForDisPlay.SourceCode" class="control-label"></label>
+                    <textarea id="sourceCodeForDisPlay.SourceCode" name="sourceCodeForDisPlay.SourceCode" asp-for="sourceCodeForDisPlay.SourceCode" placeholder="Input Your Code Here..." cols="60" rows="12"></textarea>
+                    <span asp-validation-for="sourceCodeForDisPlay.SourceCode" class="text-danger"></span>
+                </div>
+                <div style="float:left" class="form-group">
+                    <input type="hidden" asp-for="sourceCodeForDisPlay.ID" />
+                    <input type="submit" value="Update" class="btn btn-default" />
+                </div>
+                <div style="float:left;margin-left:15px;margin-top:5px">
+                    <a asp-page="./Index">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

@@ -12,8 +12,14 @@
 }
 
 <style>
+
+    #whole{
+        height : 500px;
+        width : 100%;
+    }
+
     #main {
-        height: 300px;
+        height: 400px;
         width: 100%;
     }
 
@@ -28,42 +34,50 @@
         height: auto;
         width: 50%;
     }
+
+    #bottomPos{
+        height : 100px;
+    }
+
 </style>
 
-<form method="post">
-    <div id="main">
-        <div id="left" class="form-group">
-            <textarea id="SearchCode" name="SearchCode" asp-for="SearchCode" placeholder="Input Your Code Here..." cols="60" rows="12" style="margin-left:40px;min-height:100px" autofocus="autofocus"></textarea>
-        </div>
-        <div id="right">
-            <div style="float:left" class="container">
-                <img style="float:left;height:20px;margin-top:3px;margin-right:5px" src="~/history.png" />
-                <h5>History</h5>
-                <hr style="color:gainsboro;width:570px" />
-                <div class="form-group">
-                    <table class="table">
-                        <tbody>
-                            @foreach (var item in Model.HistoryData)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Data)
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+<div id="whole">
+    <form method="post">
+        <div id="main">
+            <div id="left" class="form-group">
+                <textarea id="SearchCode" name="SearchCode" asp-for="SearchCode" placeholder="Input Your Code Here..." cols="70" rows="16" style="margin-left:40px;min-height:100px" autofocus="autofocus"></textarea>
+            </div>
+            <div id="right">
+                <div style="float:left" class="container">
+                    <img style="float:left;height:20px;margin-top:3px;margin-right:5px" src="~/history.png" />
+                    <h5>History</h5>
+                    <hr style="color:gainsboro;width:570px" />
+                    <div class="form-group">
+                        <table class="table">
+                            <tbody>
+                                @foreach (var item in Model.HistoryData)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Data)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
 
+                </div>
             </div>
         </div>
-    </div>
 
-
-    <div style="margin-top:30px;text-align:center">
-        <input type="submit" value="Check it!" class="btn btn-primary" />
-    </div>
-</form>
+        <div id="bottomPos">
+            <div style="text-align:center;align-self:center;margin-top:20px;margin-right:43%">
+                <input type="submit" value="Check it!" class="btn btn-primary" />
+            </div>
+        </div>
+    </form>
+</div>
 
 <div style="position:absolute;bottom:60px">
     <div style="float:left;margin-left:30px" class="text-muted">
@@ -84,6 +98,10 @@
     <div style="float:left;margin-left:15px">
         <a style="color:blue">DependInjection</a>
     </div>
+</div> 
+
+<div style="position:absolute;bottom:65px;right:60px">
+    <a class="nav-link text-dark" asp-area="" asp-page="/SourceCodePages/Index">Add a New SourceCode</a>
 </div>
 
 

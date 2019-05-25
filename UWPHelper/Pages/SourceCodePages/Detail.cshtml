@@ -1,0 +1,56 @@
+﻿@page
+@model UWPHelper.Pages.SourceCodePages.DetailModel
+@{
+    ViewData["Title"] = "Detail";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+
+    #whole{
+        height : auto
+    }
+
+    #main {
+        margin-left: 15%;
+        height: auto;
+        float: left;
+        width: 70%;
+        margin-right: 15%;
+    }
+
+    #bottom {
+        height: auto;
+        margin-left: 15%;
+        width:70%;
+        margin-right : 15%;
+        margin-top:5px;
+        padding-bottom : 20px;
+    }
+</style>
+
+<div id="whole">
+    <div id="main">
+        <h4>Detail</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.Name)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.sourceCodeForDisPlay.Name)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.SourceCode)
+            </dt>
+            <dd>
+                <code style="white-space:pre">@Html.DisplayFor(model => model.sourceCodeForDisPlay.SourceCode)</code>
+            </dd>
+        </dl>
+        <div id="bottom">
+            <a asp-page="./Edit" asp-route-id="@Model.sourceCodeForDisPlay.ID">Edit</a> |
+            <a asp-page="./Index">Back to List</a>
+        </div>
+    </div>
+</div>
+

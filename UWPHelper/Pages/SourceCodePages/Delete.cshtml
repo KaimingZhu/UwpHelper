@@ -1,0 +1,55 @@
+﻿@page
+@model UWPHelper.Pages.SourceCodePages.DeleteModel
+@{
+    ViewData["Title"] = "Delete";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+
+    #whole {
+        height: inherit;
+        margin-top: 20px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    #main {
+        margin-left: 15%;
+        height: auto;
+        float: left;
+        width: 70%;
+        margin-right: 15%;
+    }
+</style>
+
+
+<div id="main">
+    <h2>Delete</h2>
+    <h3>Are you sure you want to delete this?</h3>
+    <div>
+        <h4>SourceCode</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.Name)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.sourceCodeForDisPlay.Name)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.SourceCode)
+            </dt>
+            <dd>
+                <code style="white-space:pre">@Html.DisplayFor(model => model.sourceCodeForDisPlay.SourceCode)</code>
+            </dd>
+        </dl>
+
+        <form method="post">
+            <input type="hidden" asp-for="sourceCodeForDisPlay.ID" />
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            <a asp-page="./Index">Back to List</a>
+        </form>
+
+    </div>
+

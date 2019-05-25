@@ -5,16 +5,28 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="SourceCodeData\**" />
+    <Compile Remove="新文件夹\**" />
+    <Content Remove="SourceCodeData\**" />
+    <Content Remove="新文件夹\**" />
+    <EmbeddedResource Remove="SourceCodeData\**" />
+    <EmbeddedResource Remove="新文件夹\**" />
+    <None Remove="SourceCodeData\**" />
+    <None Remove="新文件夹\**" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="GitForWindows" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
 
 
   <ItemGroup>
+    <Folder Include="Model\" />
     <Folder Include="SearchData\" />
   </ItemGroup>
 

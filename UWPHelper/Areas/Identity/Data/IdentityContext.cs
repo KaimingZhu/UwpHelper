@@ -17,6 +17,7 @@ namespace UWPHelper.Models
         }
 
         public DbSet<History> HistorySet { get; set; }
+        public DbSet<SourceCode> SourceCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -30,6 +31,12 @@ namespace UWPHelper.Models
             history.Property(r => r.UserID).IsRequired();
 
             history.HasOne(r => r.User).WithMany().HasForeignKey(r => r.UserID).IsRequired();
+
+            var SourceCode = builder.Entity<SourceCode>();
+            SourceCode.ToTable("SourceCodes").HasKey(r => r.ID);
+            SourceCode.Property(r => r.name).IsRequired();
+            SourceCode.Property(r => r.FileUrl).IsRequired();
+
         }
     }
 }

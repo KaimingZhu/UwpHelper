@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html>
-<head>
+<head style="flex:0 0 auto">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - UWPHelper</title>
@@ -17,7 +17,7 @@
     </environment>
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body>
+<body style="display:flex;flex-direction:column;height:100%">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div style="float:left;display:flex;margin-left:30px">
@@ -42,12 +42,12 @@
     </header>
 
     <partial name="_CookieConsentPartial" />
-        <main role="main" class="pb-3">
+        <main role="main" class="pb-3" style="flex:1 0 auto">
             @RenderBody()
         </main>
 
     <footer class="border-top footer text-muted">
-        <div style="float:left;margin-left:30px" class="container">
+        <div style="float:left;margin-left:30px;flex:0 0 auto" class="container">
             &copy; 2019 - UWPHelper - <a asp-area="" asp-page="/Privacy">Contact Us</a>
         </div>
     </footer>

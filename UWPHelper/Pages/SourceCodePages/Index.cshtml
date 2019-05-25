@@ -1,0 +1,62 @@
+﻿@page
+@model UWPHelper.Pages.SourceCodePages.IndexModel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+
+    #whole {
+        height: inherit;
+        margin-top: 20px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    #main {
+        margin-left: 15%;
+        height: inherit;
+        float: left;
+        width: 70%;
+        margin-right: 15%;
+    }
+</style>
+
+<div id="whole">
+
+    <div id="main">
+
+        <h1>Index</h1>
+
+        <p>
+            <a asp-page="Create">Create New</a>
+        </p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.sourceCodes_ForDisPlay[0].Name)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.sourceCodes_ForDisPlay)
+                {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a><text> | </text>
+                        <a asp-page="./Detail" asp-route-id="@item.ID">Detail</a><text> | </text>
+                        <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
