@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,12 +16,28 @@ namespace UWPHelper.Models
         public string SourceCode { get; set; }
         public bool ifExist { get; }
 
-        public SourceCodeForDisPlay(int ID,string Name,string FileUrl)
-        {
+        [DataType(DataType.Date)]
+        public DateTime LastEditTime { get; set; }
+        public int SearchTime { get; set; }
+        public string DocURL { get; set; }
 
-            this.ID = ID;
-            this.Name = Name;
-            this.FileUrl = FileUrl;
+        public SourceCodeForDisPlay()
+        {
+            this.FileUrl = "";
+            this.Name = "";
+            this.SourceCode = "";
+            this.ifExist = true;
+            this.ID = int.MinValue;
+        }
+
+        public SourceCodeForDisPlay(SourceCode sourceCode)
+        {
+            ID = sourceCode.ID;
+            LastEditTime = sourceCode.LastEditDate;
+            Name = sourceCode.Name;
+            SearchTime = sourceCode.SearchTime;
+            FileUrl = sourceCode.FileUrl;
+            DocURL = sourceCode.DocURL;
 
             FileInfo fileInfo = new FileInfo(FileUrl);
             if (fileInfo.Exists)
@@ -33,17 +50,8 @@ namespace UWPHelper.Models
             else
             {
                 ifExist = false;
-                this.SourceCode = "";
+                SourceCode = "";
             }
-        }
-
-        public SourceCodeForDisPlay()
-        {
-            this.FileUrl = "";
-            this.Name = "";
-            this.SourceCode = "";
-            this.ifExist = true;
-            this.ID = int.MinValue;
         }
     }
 }

@@ -20,8 +20,7 @@ namespace UWPHelper.Areas.Identity
                     options.UseSqlServer(
                         context.Configuration.GetConnectionString("IdentityContextConnection")));
 
-                services.AddDefaultIdentity<UWPHelperUser>()
-                    .AddEntityFrameworkStores<IdentityContext>();
+                services.AddDefaultIdentity<UWPHelperUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<IdentityContext>();
             });
         }
     }

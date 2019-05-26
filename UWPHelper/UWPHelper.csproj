@@ -1,19 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <UserSecretsId>79a3edd0-2092-40a2-a04d-dcb46d5ca9ed</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="SourceCodeData\**" />
-    <Compile Remove="新文件夹\**" />
     <Content Remove="SourceCodeData\**" />
-    <Content Remove="新文件夹\**" />
     <EmbeddedResource Remove="SourceCodeData\**" />
-    <EmbeddedResource Remove="新文件夹\**" />
     <None Remove="SourceCodeData\**" />
-    <None Remove="新文件夹\**" />
   </ItemGroup>
 
 

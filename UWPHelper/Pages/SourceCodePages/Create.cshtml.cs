@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ContactManager.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,13 +16,15 @@ namespace UWPHelper.Pages.SourceCodePages
 {
     public class CreateModel : PageModel
     {
+        private readonly IAuthorizationService _authorizationService;
         private IdentityContext _identityContext { get; }
         private UserManager<UWPHelperUser> _userManager { get; }
 
-        public CreateModel(IdentityContext identityContext,UserManager<UWPHelperUser> userManager)
+        public CreateModel(IdentityContext identityContext,UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
         {
             _identityContext = identityContext;
             _userManager = userManager;
+            _authorizationService = authorizationService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -29,6 +33,11 @@ namespace UWPHelper.Pages.SourceCodePages
         public IActionResult OnGet()
         {
             //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             sourceCodeForDisPlay = new SourceCodeForDisPlay();
             return Page();
@@ -37,6 +46,11 @@ namespace UWPHelper.Pages.SourceCodePages
         public async Task<IActionResult> OnPostAsync()
         {
             //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             //加入数据库，并且添加本地文件
             //判断是否为空
@@ -46,7 +60,7 @@ namespace UWPHelper.Pages.SourceCodePages
                 var temp = await _identityContext.SourceCodes.ToListAsync();
                 foreach(var item in temp)
                 {
-                    if (item.name.Equals(sourceCodeForDisPlay.Name))
+                    if (item.Name.Equals(sourceCodeForDisPlay.Name))
                     {
                         //直接返回
                         return RedirectToPage("./Index",new{ ErrorMessage = "数据库中已有重名代码"});
@@ -66,8 +80,11 @@ namespace UWPHelper.Pages.SourceCodePages
                 //保存进入数据库
                 SourceCode sourceCode = new SourceCode
                 {
-                    name = sourceCodeForDisPlay.Name,
-                    FileUrl = url
+                    Name = sourceCodeForDisPlay.Name,
+                    FileUrl = url,
+                    LastEditDate = DateTime.Now,
+                    SearchTime = 0,
+                    DocURL = sourceCodeForDisPlay.DocURL
                 };
 
                 _identityContext.SourceCodes.Add(sourceCode);

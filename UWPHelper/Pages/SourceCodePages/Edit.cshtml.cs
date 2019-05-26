@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ContactManager.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -13,13 +15,15 @@ namespace UWPHelper.Pages.SourceCodePages
 {
     public class EditModel : PageModel
     {
+        private readonly IAuthorizationService _authorizationService;
         private readonly IdentityContext _identityContext;
         private readonly UserManager<UWPHelperUser> _userManager;
 
-        public EditModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager)
+        public EditModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
         {
             _identityContext = identityContext;
             _userManager = userManager;
+            _authorizationService = authorizationService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -27,7 +31,12 @@ namespace UWPHelper.Pages.SourceCodePages
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
-            //检查授权
+            //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             //查找数据
             var sourceCode = await _identityContext.SourceCodes.FindAsync(id);
@@ -37,7 +46,7 @@ namespace UWPHelper.Pages.SourceCodePages
                 return NotFound();
             }
 
-            sourceCodeForDisPlay = new SourceCodeForDisPlay(sourceCode.ID, sourceCode.name, sourceCode.FileUrl);
+            sourceCodeForDisPlay = new SourceCodeForDisPlay(sourceCode);
 
             return Page();
         }
@@ -45,7 +54,12 @@ namespace UWPHelper.Pages.SourceCodePages
         public async Task<IActionResult> OnPostAsync(int id)
         {
 
-            //检查授权
+            //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             //判断是否为空
             if ((sourceCodeForDisPlay.SourceCode != null) && (sourceCodeForDisPlay.Name != null))
@@ -55,13 +69,16 @@ namespace UWPHelper.Pages.SourceCodePages
                 var sourceCode = _identityContext.SourceCodes.FirstOrDefault(m => m.ID == id);
 
                 //更换名字时，需要判断是否有重名
-                if (sourceCode.name != sourceCodeForDisPlay.Name)
+                if (sourceCode.Name != sourceCodeForDisPlay.Name)
                 {
-                    var temp = _identityContext.SourceCodes.FirstOrDefault(m => m.name == sourceCodeForDisPlay.Name);
+                    var temp = _identityContext.SourceCodes.FirstOrDefault(m => m.Name == sourceCodeForDisPlay.Name);
                     if (temp != null)
                     {
                         return RedirectToPage("./Index", new { ErrorMessage = "数据库中已有重名代码" });
                     }
+
+                    //同时，若更换名称，可以默认为知识点已更换，重新计数
+                    temp.SearchTime = 0;
                 }
 
                 //删除原有文件，保存新文件
@@ -83,8 +100,12 @@ namespace UWPHelper.Pages.SourceCodePages
                 fw.Close();
 
                 //更新名称与URL
-                sourceCode.name = sourceCodeForDisPlay.Name;
+                sourceCode.Name = sourceCodeForDisPlay.Name;
                 sourceCode.FileUrl = url;
+                sourceCode.DocURL = sourceCodeForDisPlay.DocURL;
+
+                //更新修改时间
+                sourceCode.LastEditDate = DateTime.Now;
 
                 await _identityContext.SaveChangesAsync();
 

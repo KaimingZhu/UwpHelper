@@ -101,7 +101,12 @@
 </div> 
 
 <div style="position:absolute;bottom:65px;right:60px">
-    <a class="nav-link text-dark" asp-area="" asp-page="/SourceCodePages/Index">Add a New SourceCode</a>
+    @if ((await AuthorizationService.AuthorizeAsync(
+                   User, new SourceCode(),
+                   ContactManager.Authorization.ContactOperations.Update)).Succeeded)
+    {
+        <a class="nav-link text-dark" asp-area="" asp-page="/SourceCodePages/Index">Add a New SourceCode</a>
+    }
 </div>
 
 

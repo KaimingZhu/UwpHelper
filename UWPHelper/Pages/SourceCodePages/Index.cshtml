@@ -38,6 +38,12 @@
                     <th>
                         @Html.DisplayNameFor(model => model.sourceCodes_ForDisPlay[0].Name)
                     </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.sourceCodes_ForDisPlay[0].LastEditTime)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.sourceCodes_ForDisPlay[0].SearchTime)
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -46,6 +52,12 @@
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastEditTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SearchTime)
                     </td>
                     <td>
                         <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a><text> | </text>

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ContactManager.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -13,14 +15,15 @@ namespace UWPHelper.Pages.SourceCodePages
 {
     public class DeleteModel : PageModel
     {
-
+        private readonly IAuthorizationService _authorizationService;
         private readonly IdentityContext _identityContext;
         private readonly UserManager<UWPHelperUser> _userManager;
 
-        public DeleteModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager)
+        public DeleteModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
         {
             _identityContext = identityContext;
             _userManager = userManager;
+            _authorizationService = authorizationService;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -29,7 +32,12 @@ namespace UWPHelper.Pages.SourceCodePages
         public IActionResult OnGet(int ?id)
         {
 
-            //权限确认
+            //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             var sourceCode = _identityContext.SourceCodes.FirstOrDefault(r => r.ID == id);
             if(sourceCode == null)
@@ -37,7 +45,7 @@ namespace UWPHelper.Pages.SourceCodePages
                 return NotFound();
             }
 
-            sourceCodeForDisPlay = new SourceCodeForDisPlay(sourceCode.ID, sourceCode.name, sourceCode.FileUrl);
+            sourceCodeForDisPlay = new SourceCodeForDisPlay(sourceCode);
 
             return Page();
         }
@@ -45,7 +53,12 @@ namespace UWPHelper.Pages.SourceCodePages
         public async Task<IActionResult> OnPostAsync(int id)
         {
 
-            //权限确认
+            //判断是否已授权
+            var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+            if (!isAuthorized)
+            {
+                return new ChallengeResult();
+            }
 
             //确认对应代码
             var sourceCode = _identityContext.SourceCodes.FirstOrDefault(r => r.ID == id);

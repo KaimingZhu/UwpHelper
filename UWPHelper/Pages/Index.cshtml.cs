@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,17 +19,20 @@ using UWPHelper.Models;
 
 namespace UWPHelper.Pages
 {
+    [AllowAnonymous]
     public class IndexModel : PageModel
     {
         private readonly UserManager<UWPHelperUser> _userManager;
         private readonly SignInManager<UWPHelperUser> _signInManager;
         private readonly IdentityContext _identityContext;
+        private readonly IAuthorizationService _authorizationService;
 
-        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, IdentityContext identityContext)
+        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, IdentityContext identityContext, IAuthorizationService authorizationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _identityContext = identityContext;
+            _authorizationService = authorizationService;
         }
 
         private string userid { get; set; }
