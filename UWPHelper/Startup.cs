@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using UWPHelper.Areas.Identity.Data;
 using UWPHelper.Authorization;
 using UWPHelper.Models;
+using UWPHelper.Services.Implement;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper
 {
@@ -44,9 +46,6 @@ namespace UWPHelper
                 config.Filters.Add(new AuthorizeFilter(policy));
 
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            //ÊÚÈ¨³ÌÐò×¢²á
-            services.AddScoped<IAuthorizationHandler, SourceCodeAuthorizationHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

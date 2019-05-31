@@ -17,7 +17,7 @@ namespace UWPHelper.Areas.Identity.Data
             using (var context = new IdentityContext(
                 serviceProvider.GetRequiredService<DbContextOptions<IdentityContext>>()))
             {
-                var adminID = await EnsureUser(serviceProvider, testUserPw, "admin@neu.edu.com");
+                var adminID = await EnsureUser(serviceProvider, testUserPw, "admin@neu.edu.cn");
                 await EnsureRole(serviceProvider, adminID, Constants.ContactAdministratorsRole);
 
             }

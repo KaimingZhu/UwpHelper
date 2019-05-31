@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SqlServer.Server;
 using UWPHelper.Areas.Identity.Data;
 using UWPHelper.Models;
+using UWPHelper.Services.Implement;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper.Pages
 {
@@ -26,13 +28,18 @@ namespace UWPHelper.Pages
         private readonly SignInManager<UWPHelperUser> _signInManager;
         private readonly IdentityContext _identityContext;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ISourceCodeManager _sourceCodeManager;
+        private readonly IDetectManager _detectManager;
 
-        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, IdentityContext identityContext, IAuthorizationService authorizationService)
+        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, 
+            IdentityContext identityContext, IAuthorizationService authorizationService,ISourceCodeManager sourceCodeManager,IDetectManager detectManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _identityContext = identityContext;
             _authorizationService = authorizationService;
+            _sourceCodeManager = sourceCodeManager;
+            _detectManager = detectManager;
         }
 
         private string userid { get; set; }
@@ -60,6 +67,7 @@ namespace UWPHelper.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
+
             //判断是否从结果页面跳转回来
             if (SearchUser != null)
             {
