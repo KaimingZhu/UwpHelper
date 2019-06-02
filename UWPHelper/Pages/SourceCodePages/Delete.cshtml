@@ -32,39 +32,45 @@
         <hr />
         <dl class="dl-horizontal">
             <dt>
-                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.Name)
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.Name)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.sourceCodeForDisPlay.Name)
+                @Html.DisplayFor(model => model.sourceCodeForDisplay.Name)
             </dd>
             <dt>
-                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.DocURL)
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.EnglishName)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.sourceCodeForDisPlay.DocURL)
-            </dd>
-            <dd>
-                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.LastEditTime)
-            </dd>
-            <dd>
-                @Html.DisplayFor(model => model.sourceCodeForDisPlay.LastEditTime)
-            </dd>
-            <dd>
-                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.SearchTime)
-            </dd>
-            <dd>
-                @Html.DisplayFor(model => model.sourceCodeForDisPlay.SearchTime)
+                @Html.DisplayFor(model => model.sourceCodeForDisplay.EnglishName)
             </dd>
             <dt>
-                @Html.DisplayNameFor(model => model.sourceCodeForDisPlay.SourceCode)
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.DocURL)
             </dt>
             <dd>
-                <code style="white-space:pre">@Html.DisplayFor(model => model.sourceCodeForDisPlay.SourceCode)</code>
+                @Html.DisplayFor(model => model.sourceCodeForDisplay.DocURL)
+            </dd>
+            <dd>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.LastEditTime)
+            </dd>
+            <dd>
+                @Html.DisplayFor(model => model.sourceCodeForDisplay.LastEditTime)
+            </dd>
+            <dd>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.SearchTime)
+            </dd>
+            <dd>
+                @Html.DisplayFor(model => model.sourceCodeForDisplay.SearchTime)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.sourceCodeForDisplay.SourceCode)
+            </dt>
+            <dd>
+                <code style="white-space:pre">@Html.DisplayFor(model => model.sourceCodeForDisplay.SourceCode)</code>
             </dd>
         </dl>
 
         <form method="post">
-            <input type="hidden" asp-for="sourceCodeForDisPlay.ID" />
+            <input type="hidden" asp-for="sourceCodeForDisplay.ID" />
             <input type="submit" value="Delete" class="btn btn-default" /> |
             <a asp-page="./Index">Back to List</a>
         </form>

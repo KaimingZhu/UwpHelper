@@ -35,7 +35,7 @@ namespace UWPHelper.Models
             var SourceCode = builder.Entity<SourceCode>();
             SourceCode.ToTable("SourceCodes").HasKey(r => r.ID);
             SourceCode.Property(r => r.Name).IsRequired();
-            SourceCode.Property(r => r.FileUrl).IsRequired();
+            SourceCode.Property(r => r.EnglishName).IsRequired();
 
         }
     }

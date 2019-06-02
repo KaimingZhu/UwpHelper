@@ -31,7 +31,7 @@ namespace UWPHelper.Areas.Identity
                 services.AddScoped<IAuthorizationHandler, SourceCodeAuthorizationHandler>();
 
                 //Service注册
-                services.AddSingleton<IDetectManager, DetectManager>();
+                services.AddScoped<IDetectManager, DetectManager>();
                 services.AddScoped<ISourceCodeManager,SourceCodeManager>();
             });
         }

@@ -12,14 +12,13 @@
 }
 
 <style>
-
-    #whole{
-        height : 500px;
-        width : 100%;
+    #whole {
+        height: 600px;
+        width: 100%;
     }
 
     #main {
-        height: 400px;
+        height: 500px;
         width: 100%;
     }
 
@@ -35,78 +34,77 @@
         width: 50%;
     }
 
-    #bottomPos{
-        height : 100px;
+    #bottomPos {
+        height: 100px;
     }
-
 </style>
 
 <div id="whole">
-    <form method="post">
-        <div id="main">
+    
+    <div id="main">
+        <form method="post">
             <div id="left" class="form-group">
-                <textarea id="SearchCode" name="SearchCode" asp-for="SearchCode" placeholder="Input Your Code Here..." cols="70" rows="16" style="margin-left:40px;min-height:100px" autofocus="autofocus"></textarea>
+                <div asp-validation-summary="ModelOnly"></div>
+                <div class="form-group" style="margin-left:40px">
+                    <h5>Name</h5>
+                    <input asp-for="SearchCodeName" class="form-control" style="width:300px" />
+                </div>
+                <div>
+                    <h5 style="margin-left:40px">SourceCode</h5>
+                    <textarea id="SearchCode" name="SearchCode" asp-for="SearchCode" placeholder="Input Your Code Here..." cols="70" rows="16" style="margin-left:40px;min-height:100px" autofocus="autofocus"></textarea>
+                    <div style="text-align:center;align-self:center;margin-top:10px;margin-right:43%">
+                        <input type="submit" value="Check it!" class="btn btn-primary" />
+                    </div>
+                </div>
             </div>
-            <div id="right">
-                <div style="float:left" class="container">
-                    <img style="float:left;height:20px;margin-top:3px;margin-right:5px" src="~/history.png" />
-                    <h5>History</h5>
-                    <hr style="color:gainsboro;width:570px" />
-                    <div class="form-group">
+        </form>
+        <div id="right">
+            <div style="float:left" class="container">
+                <img style="float:left;height:20px;margin-top:3px;margin-right:5px" src="~/history.png" />
+                <h5>History</h5>
+                <div class="form-group">
+                    @if (await Model._userManager.GetUserAsync(User) != null)
+                    {
                         <table class="table">
                             <tbody>
                                 @foreach (var item in Model.HistoryData)
                                 {
                                     <tr>
                                         <td>
-                                            @Html.DisplayFor(modelItem => item.Data)
+                                            <a asp-page="./Result" asp-route-id="@item.ID">@Html.DisplayFor(modelitem => item.Name)</a>
                                         </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
-                    </div>
-
+                    }
+                    else
+                    {
+                        <text>Register or Login to have a better Experience :)</text>
+                    }
                 </div>
-            </div>
-        </div>
 
-        <div id="bottomPos">
-            <div style="text-align:center;align-self:center;margin-top:20px;margin-right:43%">
-                <input type="submit" value="Check it!" class="btn btn-primary" />
             </div>
         </div>
-    </form>
+    </div>
 </div>
-
 <div style="position:absolute;bottom:60px">
     <div style="float:left;margin-left:30px" class="text-muted">
         <p>Maybe you Want :</p>
     </div>
+    @for (int i = 0; i < Model.sourceCodes.Count;i++)
+    {
     <div style="float:left;margin-left:15px">
-        <a style="color:blue">MediaPlayer</a>
+        <a style="color:blue;margin-left:8px" href="@Model.sourceCodes[i].DocURL" >@Html.DisplayFor(modelitem => modelitem.sourceCodes[i].Name)</a>
     </div>
-    <div style="float:left;margin-left:15px">
-        <a style="color:blue">Carema</a>
-    </div>
-    <div style="float:left;margin-left:15px">
-        <a style="color:blue">Map</a>
-    </div>
-    <div style="float:left;margin-left:15px">
-        <a style="color:blue">RichTextBox</a>
-    </div>
-    <div style="float:left;margin-left:15px">
-        <a style="color:blue">DependInjection</a>
-    </div>
-</div> 
+    }
+</div>
 
 <div style="position:absolute;bottom:65px;right:60px">
     @if ((await AuthorizationService.AuthorizeAsync(
-                   User, new SourceCode(),
-                   ContactManager.Authorization.ContactOperations.Update)).Succeeded)
+                  User, new SourceCode(),
+                  ContactManager.Authorization.ContactOperations.Update)).Succeeded)
     {
         <a class="nav-link text-dark" asp-area="" asp-page="/SourceCodePages/Index">Add a New SourceCode</a>
     }
 </div>
-
-

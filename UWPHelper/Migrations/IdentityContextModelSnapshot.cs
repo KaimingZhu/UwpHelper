@@ -143,6 +143,8 @@ namespace UWPHelper.Migrations
 
                     b.Property<string>("Data");
 
+                    b.Property<string>("Name");
+
                     b.Property<string>("UserID")
                         .IsRequired();
 
@@ -212,7 +214,7 @@ namespace UWPHelper.Migrations
 
                     b.Property<string>("DocURL");
 
-                    b.Property<string>("FileUrl")
+                    b.Property<string>("EnglishName")
                         .IsRequired();
 
                     b.Property<DateTime>("LastEditDate");

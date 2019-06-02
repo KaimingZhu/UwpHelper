@@ -1,14 +1,10 @@
-﻿@page
+﻿@page "{id?}"
 @model UWPHelper.Pages.Shared.ResultModel
 @{
     ViewData["Title"] = "Result";
 }
 
 <style>
-    #main {
-        height: auto;
-        width: 100%;
-    }
 
     #left {
         float: left;
@@ -26,16 +22,41 @@
 <!-- 此处应该有一个左右分区效果，左边是代码，右边是注释字体 -->
 
 <div id="main">
-    <div id="left">
-        @Html.DisplayFor(Model => Model.SearchCode);
-    </div>
-    <div id="right">
-        <p>嘻嘻嘻</p>
+    <h1>DetectResults</h1>
+    <hr/>
+    <div id="code">
+        @foreach (var item in Model.displayResults)
+        {
+            @if (item.filename.Length > 0)
+            {
+                <h4>@Html.DisplayFor(modelitem => item.filename)</h4>
+                <code style="white-space:pre;color:@item.getColor()">@Html.DisplayFor(model => item.data)</code>
+            }
+            else
+            {
+                <code style="white-space:pre;color:slategray">@Html.DisplayFor(model => item.data)</code>
+            }
+        }
     </div>
 </div>
 
-<div id="main">
-    <form method="post">
-        <input style="margin-left:40%;margin-top:50px;text-align:center" type="submit" value="Back" class="btn btn-primary" />
-    </form>
+<div id="main" style="margin-left:45%;margin-top:50px;text-align:center">
+    @if ((await Model._userManager.GetUserAsync(User) != null) && (Model.id == int.MinValue))
+    {
+        <form method="post">
+            <input asp-for="ifSave" type="hidden" value="@true" />
+            <input style="float:left" type="submit" value="Save" class="btn btn-primary" />
+        </form>
+        <form method="post">
+            <input asp-for="ifSave" type="hidden" value="@false" />
+            <input style="float:left;margin-left:30px" type="submit" value="Back" class="btn btn-danger" />
+        </form>
+    }
+    else
+    {
+        <form method="post">
+            <input asp-for="ifSave" type="hidden" value="@false" />
+            <input style="float:left;margin-left:20px" type="submit" value="Back" class="btn btn-danger" />
+        </form>
+    }
 </div>

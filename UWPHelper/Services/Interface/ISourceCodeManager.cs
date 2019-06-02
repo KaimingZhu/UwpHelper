@@ -8,26 +8,30 @@ namespace UWPHelper.Services.Interface
 {
     public interface ISourceCodeManager
     {
+        //Check For Same Name or Same EnglishName
+        bool VaildationCheck(SourceCodeForDisPlay item);
+
         //GetSourceCode
         List<SourceCodeForDisPlay> GetSourceCodeForDisPlays();
 
         //AddSourceCode
-        void AddSourceCode(SourceCodeForDisPlay temp);
+        Task<bool> AddSourceCode(SourceCodeForDisPlay temp);
 
         //FindSourceCode
         SourceCodeForDisPlay FindSourceCode(int id);
-        SourceCodeForDisPlay FindSourceCode(string FileUrl);
+        SourceCodeForDisPlay FindSourceCode(string FileName);
+        SourceCodeForDisPlay FindSourceCodeForName(string name);
+        SourceCodeForDisPlay FindSourceCodeForEnglishName(string EnglishName);
 
-        //UpdateSourceCode
-        void UpdateSourceCode(SourceCodeForDisPlay temp);
-        void UpdateSourceCode(int id);
+        //UpdateSourceCode with id and new data
+        Task<bool> UpdateSourceCode(SourceCodeForDisPlay temp);
 
         //RemoveSourceCode
-        void RemoveSourceCode(SourceCodeForDisPlay temp);
-        void RemoveSourceCode(int id);
+        Task<bool> RemoveSourceCode(SourceCodeForDisPlay temp);
+        Task<bool> RemoveSourceCode(int id);
 
         //Sort
-        void SortSourceCode();
+        List<SourceCodeForDisPlay> GetSortedSourceCode();
 
     }
 }

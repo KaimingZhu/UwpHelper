@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -22,136 +23,34 @@ using UWPHelper.Services.Interface;
 namespace UWPHelper.Pages
 {
     [AllowAnonymous]
-    public class IndexModel : PageModel
+    public class IndexModel : SearchCodePageModel
     {
-        private readonly UserManager<UWPHelperUser> _userManager;
-        private readonly SignInManager<UWPHelperUser> _signInManager;
-        private readonly IdentityContext _identityContext;
-        private readonly IAuthorizationService _authorizationService;
-        private readonly ISourceCodeManager _sourceCodeManager;
-        private readonly IDetectManager _detectManager;
-
-        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, 
-            IdentityContext identityContext, IAuthorizationService authorizationService,ISourceCodeManager sourceCodeManager,IDetectManager detectManager)
+        public IndexModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager,IDetectManager detectManager,
+            IdentityContext identityContext, IAuthorizationService authorizationService, ISourceCodeManager sourceCodeManager) : base(userManager,signInManager,detectManager,identityContext,authorizationService,sourceCodeManager)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _identityContext = identityContext;
-            _authorizationService = authorizationService;
-            _sourceCodeManager = sourceCodeManager;
-            _detectManager = detectManager;
+            
         }
 
-        private string userid { get; set; }
-
         [BindProperty(SupportsGet = true)]
-        private UWPHelperUser user { get; set; }
+        public IList<SourceCodeForDisPlay> sourceCodes { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public IList<History> HistoryData { get; set; }
 
-        [BindProperty(SupportsGet = true)]
-        public string SearchUser { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string Time { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public bool IfRealUser { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public bool ifFind { get; set; }
-
-        [BindProperty(SupportsGet = true)]
+        [Required]
+        [BindProperty]
         public string SearchCode { get; set; }
+
+        [Required]
+        [BindProperty]
+        public string SearchCodeName { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
+            //将历史删除与文件删除操作交给Result页面进行处理
 
-            //判断是否从结果页面跳转回来
-            if (SearchUser != null)
-            {
-                if (!ifFind)
-                {
-                    //若未找到，删除临时文件与对应的记录，并且将其绑定到SearchCode上
-                    if (IfRealUser)
-                    {
-                        //若是注册用户，需要删除数据库项中对应的记录
-                        //只需选出最晚的记录即可
-
-                        //选出最早的数据
-                        var history = HistoryData[0];
-                        foreach (var item in HistoryData)
-                        {
-                            if (item.AddTime > history.AddTime)
-                            {
-                                history = item;
-                            }
-                        }
-                        //删除数据
-                        var temp = await _identityContext.HistorySet.FindAsync(history.ID);
-
-                        if (temp != null)
-                        {
-                            _identityContext.Remove(temp);
-                        }
-
-                        await _identityContext.SaveChangesAsync();
-                    }
-
-                    //读取对应的文件，并且进行绑定
-                    StreamReader sr;
-                    if (!IfRealUser)
-                    {
-                        sr = new StreamReader("SearchData\\temp\\" + Time + ".txt");
-                    }
-                    else
-                    {
-                        sr = new StreamReader("SearchData\\" + SearchUser + "\\" + Time + ".txt");
-                    }
-
-                    SearchCode = sr.ReadToEnd();
-                    sr.Close();
-
-
-                    /** 删除缓存的文件 **/
-                    if (IfRealUser)
-                    {
-                        FileInfo fp_search = new FileInfo("SearchData\\" + SearchUser + "\\" + Time + ".txt");
-                        if (fp_search.Exists)
-                        {
-                            fp_search.Delete();
-                        }
-                        FileInfo fp_result = new FileInfo("SearchData\\" + SearchUser + "\\" + Time + "_result.txt");
-                        if (fp_result.Exists)
-                        {
-                            fp_result.Delete();
-                        }
-                    }
-                    else
-                    {
-                        FileInfo fp_search = new FileInfo("SearchData\\temp\\" + Time + ".txt");
-                        if (fp_search.Exists)
-                        {
-                            fp_search.Delete();
-                        }
-                        FileInfo fp_result = new FileInfo("SearchData\\temp\\" + Time + "_result.txt");
-                        if (fp_result.Exists)
-                        {
-                            fp_result.Delete();
-                        }
-                    }
-                }
-
-                TempData["alertMessage"] = "Sorry, the time has ran out, maybe you can try again.";
-            }
-            else
-            {
-                TempData["alertMessage"] = null;
-            }
-
-            user = await _userManager.GetUserAsync(User);
-            if(user != null)
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
             {
                 HistoryData = await _identityContext.HistorySet.Include(r => r.User).Where(r => r.UserID == user.Id).ToListAsync();
             }
@@ -160,18 +59,22 @@ namespace UWPHelper.Pages
                 HistoryData = new List<History>();
             }
 
+            sourceCodes = _sourceCodeManager.GetSortedSourceCode();
             return Page();
         }
 
         private string TimeToString(DateTime Time)
         {
-            return Time.Year.ToString() + Time.Month.ToString() + Time.Day.ToString() + "-" + 
-                Time.Hour.ToString() + Time.Minute.ToString() +Time.Second.ToString() + Time.Millisecond.ToString();
+            return Time.Year.ToString() + "_" + Time.Month.ToString() + "_" + Time.Day.ToString() + "-" +
+                Time.Hour.ToString() + "_" + Time.Minute.ToString() + "_" + Time.Second.ToString() + "_" + Time.Millisecond.ToString();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if(user == null)
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            string userid;
+
+            if (user == null)
             {
                 userid = null;
             }
@@ -182,42 +85,13 @@ namespace UWPHelper.Pages
             var TimeNow = DateTime.Now;
 
             //此处应该先执行保存操作
-            //传递给下一个页面时间戳+id的信息
-            if (user != null)
-            {
-                var amount = HistoryData.Count;
-                //先检查是否已有15个数据
-                if (amount == 15)
-                {
-                    //选出最早的数据
-                    var history = HistoryData[0];
-                    foreach (var item in HistoryData)
-                    {
-                        if (item.AddTime < history.AddTime)
-                        {
-                            history = item;
-                        }
-                    }
-                    //删除数据
-                    var temp = await _identityContext.HistorySet.FindAsync(history.ID);
+            //传递给下一个页面文件保存目录的信息
+            //历史添加数据交给Result页面执行
 
-                    if (temp != null)
-                    {
-                        _identityContext.Remove(temp);
-                    }
+            string FolderURL = "";
 
-                    /** 删除缓存的文件 **/
-                    FileInfo fp_search = new FileInfo("SearchData\\" + user.Id + "\\" + TimeToString(temp.AddTime) + ".txt");
-                    if (fp_search.Exists)
-                    {
-                        fp_search.Delete();
-                    }
-                    FileInfo fp_result = new FileInfo("SearchData\\" + user.Id + "\\" + TimeToString(temp.AddTime) + "_result.txt");
-                    if (fp_result.Exists)
-                    {
-                        fp_result.Delete();
-                    }
-                }
+            if (!Directory.Exists("SearchData\\")){
+                Directory.CreateDirectory("SearchData\\");
             }
 
             //保存数据
@@ -225,80 +99,40 @@ namespace UWPHelper.Pages
             if (user != null)
             {
 
-                TempData["alertMessage"] = null;
-
-                if (SearchCode != null)
+                //先判断文件夹是否存在，若不存在，则创建
+                if (!Directory.Exists("SearchData\\" + user.Id))
                 {
-
-                    History newData = new History
-                    {
-                        User = user,
-                        UserID = user.Id,
-                        AddTime = TimeNow,
-                        Data = SearchCode
-                    };
-
-                    _identityContext.HistorySet.Add(newData);
-
-                    //先判断文件夹是否存在，若不存在，则创建
-                    if (!Directory.Exists("SearchData\\" + user.Id )){
-                        Directory.CreateDirectory("SearchData\\" + user.Id);
-                    }
-
-                    //创建文件
-                    FileStream fp = new FileStream("SearchData//" + user.Id +"//" + TimeToString(TimeNow) + ".txt", FileMode.CreateNew);
-                    fp.Close();
-
-                    //开始写入
-                    StreamWriter fw = new StreamWriter("SearchData//" + user.Id + "//" + TimeToString(TimeNow) + ".txt");
-                    fw.Write(SearchCode);
-                    fw.Close();
+                    Directory.CreateDirectory("SearchData\\" + user.Id);
                 }
-                else
-                {
-                    /** 需要修改 **/
-                    TempData["alertMessage"] = "Please Enter the Code you Want to Search";
-                    return RedirectToPage("./Index");
-                }
+
+                Directory.CreateDirectory("SearchData\\" + user.Id + "\\" + TimeToString(TimeNow) + "\\");
+
+                FolderURL = "SearchData\\" + user.Id + "\\" + TimeToString(TimeNow) + "\\";
             }
             else
             {
-                if (SearchCode != null)
+                //先判断文件夹是否存在，若不存在，则创建
+                if (!Directory.Exists("SearchData\\temp"))
                 {
-
-                    TempData["alertMessage"] = null;
-
-                    //先判断文件夹是否存在，若不存在，则创建
-                    if (!Directory.Exists("SearchData\\temp"))
-                    {
-                        Directory.CreateDirectory("SearchData\\temp");
-                    }
-
-                    //创建文件
-                    FileStream fp = new FileStream("SearchData//temp//" + TimeToString(TimeNow) + ".txt", FileMode.CreateNew);
-                    fp.Close();
-                    //开始写入
-                    StreamWriter fw = new StreamWriter("SearchData//temp//" + TimeToString(TimeNow) + ".txt");
-                    fw.Write(SearchCode);
-                    fw.Close();
+                    Directory.CreateDirectory("SearchData\\temp");
                 }
-                else
-                {
-                    /** 需要修改 **/
-                    TempData["alertMessage"] = "Please Enter the Code you Want to Search";
-                    return RedirectToPage("./Index");
-                }
+
+                Directory.CreateDirectory("SearchData\\temp\\" + TimeToString(TimeNow) + "-" + SearchCodeName);
+
+                FolderURL = "SearchData\\temp\\" + TimeToString(TimeNow) + "-" + SearchCodeName + "\\";
             }
 
-            await _identityContext.SaveChangesAsync();
+            //创建文件
+            FileStream fp = new FileStream(FolderURL + "1.cs", FileMode.CreateNew);
+            fp.Close();
+
+            //开始写入
+            StreamWriter fw = new StreamWriter(FolderURL + "1.cs");
+            fw.Write(SearchCode);
+            fw.Close();
 
             //页面跳转
-            return RedirectToPage("./Result", new { User = userid, Time = TimeToString(TimeNow), IfRealUser = (user != null) });
-        }
-
-        private IActionResult View()
-        {
-            throw new NotImplementedException();
+            return RedirectToPage("./Result",new { FolderURL = FolderURL, SourceCodeName = SearchCodeName});
         }
     }
 }

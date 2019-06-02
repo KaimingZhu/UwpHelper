@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using UWPHelper.Areas.Identity.Data;
 using UWPHelper.Models;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper.Pages.SourceCodePages
 {
@@ -19,12 +20,23 @@ namespace UWPHelper.Pages.SourceCodePages
         private readonly IAuthorizationService _authorizationService;
         private IdentityContext _identityContext { get; }
         private UserManager<UWPHelperUser> _userManager { get; }
+        private readonly IDetectManager _detectManager;
+        private readonly ISourceCodeManager _sourceCodeManager;
 
-        public CreateModel(IdentityContext identityContext,UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
+        public CreateModel(IdentityContext identityContext,UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService,
+            IDetectManager detectManager, ISourceCodeManager sourceCodeManager)
         {
             _identityContext = identityContext;
             _userManager = userManager;
             _authorizationService = authorizationService;
+            _detectManager = detectManager;
+            _sourceCodeManager = sourceCodeManager;
+        }
+
+        private string TimeToString(DateTime Time)
+        {
+            return Time.Year.ToString() + "_" + Time.Month.ToString() + "_" + Time.Day.ToString() + "-" +
+                Time.Hour.ToString() + "_" + Time.Minute.ToString() + "_" + Time.Second.ToString() + "_" + Time.Millisecond.ToString();
         }
 
         [BindProperty(SupportsGet = true)]
@@ -34,6 +46,7 @@ namespace UWPHelper.Pages.SourceCodePages
         {
             //判断是否已授权
             var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
+
             if (!isAuthorized)
             {
                 return new ChallengeResult();
@@ -56,19 +69,14 @@ namespace UWPHelper.Pages.SourceCodePages
             //判断是否为空
             if (sourceCodeForDisPlay.SourceCode != null && sourceCodeForDisPlay.Name != null)
             {
-                //判断是否有重名
-                var temp = await _identityContext.SourceCodes.ToListAsync();
-                foreach(var item in temp)
-                {
-                    if (item.Name.Equals(sourceCodeForDisPlay.Name))
-                    {
-                        //直接返回
-                        return RedirectToPage("./Index",new{ ErrorMessage = "数据库中已有重名代码"});
-                    }
+                if (!Directory.Exists("SourceCodeData")){
+                    Directory.CreateDirectory("SourceCodeData");
                 }
 
-                //写入新文件:创建
-                string url = "SourceCodeData//" + sourceCodeForDisPlay.Name + ".cs";
+                //先写文件
+                var time = DateTime.Now;
+                string url = "SourceCodeData//" + TimeToString(time) + "-" + sourceCodeForDisPlay.EnglishName + ".cs";
+                string filename = TimeToString(time) + "-" + sourceCodeForDisPlay.EnglishName + ".cs";
                 FileStream fp = new FileStream(url, FileMode.CreateNew);
                 fp.Close();
 
@@ -78,18 +86,12 @@ namespace UWPHelper.Pages.SourceCodePages
                 fw.Close();
 
                 //保存进入数据库
-                SourceCode sourceCode = new SourceCode
-                {
-                    Name = sourceCodeForDisPlay.Name,
-                    FileUrl = url,
-                    LastEditDate = DateTime.Now,
-                    SearchTime = 0,
-                    DocURL = sourceCodeForDisPlay.DocURL
-                };
+                sourceCodeForDisPlay.LastEditTime = time;
+                sourceCodeForDisPlay.SearchTime = 0;
+                await _sourceCodeManager.AddSourceCode(sourceCodeForDisPlay);
 
-                _identityContext.SourceCodes.Add(sourceCode);
-
-                await _identityContext.SaveChangesAsync();
+                //在List中添加这一项信息
+                _detectManager.AddItemtoInitList(filename);
             }
             else
             {

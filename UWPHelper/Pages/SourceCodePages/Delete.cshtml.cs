@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using UWPHelper.Areas.Identity.Data;
 using UWPHelper.Models;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper.Pages.SourceCodePages
 {
@@ -18,16 +19,21 @@ namespace UWPHelper.Pages.SourceCodePages
         private readonly IAuthorizationService _authorizationService;
         private readonly IdentityContext _identityContext;
         private readonly UserManager<UWPHelperUser> _userManager;
+        private readonly IDetectManager _detectManager;
+        private readonly ISourceCodeManager _sourceCodeManager;
 
-        public DeleteModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
+        public DeleteModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService,
+            ISourceCodeManager sourceCodeManager,IDetectManager detectManager)
         {
             _identityContext = identityContext;
             _userManager = userManager;
             _authorizationService = authorizationService;
+            _detectManager = detectManager;
+            _sourceCodeManager = sourceCodeManager;
         }
 
         [BindProperty(SupportsGet = true)]
-        public SourceCodeForDisPlay sourceCodeForDisPlay { get; set; }
+        public SourceCodeForDisPlay sourceCodeForDisplay { get; set; }
 
         public IActionResult OnGet(int ?id)
         {
@@ -39,13 +45,12 @@ namespace UWPHelper.Pages.SourceCodePages
                 return new ChallengeResult();
             }
 
-            var sourceCode = _identityContext.SourceCodes.FirstOrDefault(r => r.ID == id);
-            if(sourceCode == null)
+            int sourceCodeid = (int)id;
+            sourceCodeForDisplay = _sourceCodeManager.FindSourceCode(sourceCodeid);
+            if(sourceCodeForDisplay == null)
             {
                 return NotFound();
             }
-
-            sourceCodeForDisPlay = new SourceCodeForDisPlay(sourceCode);
 
             return Page();
         }
@@ -61,23 +66,25 @@ namespace UWPHelper.Pages.SourceCodePages
             }
 
             //确认对应代码
-            var sourceCode = _identityContext.SourceCodes.FirstOrDefault(r => r.ID == id);
+            sourceCodeForDisplay = _sourceCodeManager.FindSourceCode(id);
 
-            if (sourceCode == null)
+            if (sourceCodeForDisplay == null)
             {
                 return NotFound();
             }
 
+            //删除FileList中的记录
+            _detectManager.DeleteItemFromInitList(sourceCodeForDisplay.GetFileName());
+
             //删除文件
-            FileInfo file = new FileInfo(sourceCode.FileUrl);
+            FileInfo file = new FileInfo("SourceCodeData//" + sourceCodeForDisplay.GetFileName());
             if (file.Exists)
             {
                 file.Delete();
             }
 
             //删除对应的数据库记录
-            _identityContext.SourceCodes.Remove(sourceCode);
-            await _identityContext.SaveChangesAsync();
+            await _sourceCodeManager.RemoveSourceCode(sourceCodeForDisplay);
 
             return RedirectToPage("./Index");
         }

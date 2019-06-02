@@ -22,5 +22,17 @@ namespace UWPHelper.Areas.Identity.Data
         public string UserID { get; set; }
         public UWPHelperUser User { get; set; }
         public DateTime AddTime { get; set; }
+        public string Name { get; set; }
+
+        public string GetFolderURL()
+        {
+            return "SearchData\\" + UserID + "\\" + TimeToString(AddTime) + "\\";
+        }
+
+        private string TimeToString(DateTime Time)
+        {
+            return Time.Year.ToString() + "_" + Time.Month.ToString() + "_" + Time.Day.ToString() + "-" +
+                Time.Hour.ToString() + "_" + Time.Minute.ToString() + "_" + Time.Second.ToString() + "_" + Time.Millisecond.ToString();
+        }
     }
 }

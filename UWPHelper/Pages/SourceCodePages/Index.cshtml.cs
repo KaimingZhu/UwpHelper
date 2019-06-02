@@ -9,26 +9,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using UWPHelper.Areas.Identity.Data;
 using UWPHelper.Models;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper.Pages.SourceCodePages
 {
     public class IndexModel : PageModel
     {
-        private readonly IAuthorizationService _authorizationService;
-        private IdentityContext _identityContext { get; }
+        private IAuthorizationService _authorizationService;
+        private readonly ISourceCodeManager _sourceCodeManager;
         private UserManager<UWPHelperUser> _userManager { get; }
+        private readonly IDetectManager _detectManager;
 
-        public IndexModel(IdentityContext identityContext, UserManager<UWPHelperUser> userManager, IAuthorizationService authorizationService)
+        public IndexModel(ISourceCodeManager sourceCodeManager, UserManager<UWPHelperUser> userManager, 
+            IAuthorizationService authorizationService, IDetectManager detectManager)
         {
-            _identityContext = identityContext;
+            _sourceCodeManager = sourceCodeManager;
             _userManager = userManager;
             _authorizationService = authorizationService;
+            _detectManager = detectManager;
         }
 
         [BindProperty(SupportsGet = true)]
         public IList<SourceCodeForDisPlay> sourceCodes_ForDisPlay { get; set; }
 
-        public async Task<IActionResult> OnGetAsync()
+        public IActionResult OnGetAsync()
         {
             //判断是否已授权
             var isAuthorized = User.IsInRole(Constants.ContactAdministratorsRole);
@@ -40,32 +44,27 @@ namespace UWPHelper.Pages.SourceCodePages
             //错误信息返回
 
             //读取数据
-            await GetSourceCodeForDisPlayAsync();
+            sourceCodes_ForDisPlay = _sourceCodeManager.GetSourceCodeForDisPlays();
 
             return Page();
         }
 
         public async Task GetSourceCodeForDisPlayAsync()
         {
-            var SourceCodes = from s in _identityContext.SourceCodes select s;
+            var SourceCodes = _sourceCodeManager.GetSourceCodeForDisPlays();
 
             foreach (var item in SourceCodes){
-                var temp = new SourceCodeForDisPlay(item);
-                if (temp.ifExist)
+                if (item.ifExist)
                 {
-                    sourceCodes_ForDisPlay.Add(temp);
+                    sourceCodes_ForDisPlay.Add(item);
                 }
                 else
                 {
-                    var delete = await _identityContext.SourceCodes.FindAsync(item.ID);
-                    if(delete != null)
-                    {
-                        _identityContext.Remove(delete);
-                    }
+                    //如果对应的.cs文件不存在的话: 删除数据库记录，并且删除对应的FileList记录项
+                    await _sourceCodeManager.RemoveSourceCode(item);
+                    _detectManager.DeleteItemFromInitList(item.GetFileName());
                 }
             }
-
-            await _identityContext.SaveChangesAsync();
         }
     }
 }

@@ -8,116 +8,234 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using UWPHelper.Areas.Identity.Data;
+using UWPHelper.Model;
 using UWPHelper.Models;
+using UWPHelper.Services.Implement;
+using UWPHelper.Services.Interface;
 
 namespace UWPHelper.Pages.Shared
 {
     [AllowAnonymous]
-    public class ResultModel : PageModel
+    public class ResultModel : SearchCodePageModel
     {
 
-        private readonly UserManager<UWPHelperUser> _userManager;
-        private readonly SignInManager<UWPHelperUser> _signInManager;
-        private readonly IdentityContext _identityContext;
 
-        public ResultModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, IdentityContext identityContext)
+        public ResultModel(UserManager<UWPHelperUser> userManager, SignInManager<UWPHelperUser> signInManager, IDetectManager detectManager,
+            IdentityContext identityContext, IAuthorizationService authorizationService, ISourceCodeManager sourceCodeManager) 
+            : base(userManager, signInManager, detectManager, identityContext, authorizationService, sourceCodeManager)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _identityContext = identityContext;
+
         }
 
         [BindProperty(SupportsGet = true)]
-        public string User { get; set; }
+        public bool ifSave { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string Time { get; set; }
+        public string FolderURL { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public bool IfRealUser { get; set; }
+        public string SourceCodeName { get; set; }
 
-        [BindProperty]
-        public string SearchCode { get; set; }
+        [BindProperty(SupportsGet = true)]
+        public List<DetectResult> detectResults { get; set; }
 
-        [BindProperty]
-        public bool ifFind { get; set; }
+        [BindProperty(SupportsGet = true)]
+        public List<DisplayResult> displayResults { get; set; }
 
-        public IActionResult OnGet()
+        [BindProperty(SupportsGet = true)]
+        public int id { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
         {
-            //在前端实现绑定后，在此处实现文件读取
-            ReadFile();
-            //呈现到前端绑定的部分上
-            if (ifFind == false)
+
+            //判断是否进行历史搜索
+            if (string.IsNullOrEmpty(FolderURL))
             {
-                return RedirectToPage("./Index", new { SearchUser = User, Time, IfRealUser = (User != null),ifFind });
+                var userNow = await _userManager.GetUserAsync(User);
+                if(userNow == null)
+                {
+                    return new NotFoundResult();
+                }
+                var HistoryData = await _identityContext.HistorySet.Include(r => r.User).Where(r => r.UserID == userNow.Id).ToListAsync();
+                foreach(var item in HistoryData)
+                {
+                    if(item.ID == id)
+                    {
+                        FolderURL = item.GetFolderURL();
+                    }
+                }
+            }
+            else
+            {
+                id = int.MinValue;
             }
 
+
+            //执行流程 : 
+            //先执行检测
+            string file;
+            bool ifCorrent = await _detectManager.DetectBetweenFileListAsync(FolderURL);
+
+            //检测完之后获得结果
+            detectResults = await _detectManager.AnalyseAsync(FolderURL, _sourceCodeManager.GetSourceCodeForDisPlays());
+            
+            //若是用户 : 保存历史数据
+            var user = await _userManager.GetUserAsync(User);
+
+            if(user != null)
+            {
+                StreamReader sr = new StreamReader(FolderURL + "1.cs");
+                file = sr.ReadToEnd();
+                sr.Close();
+            }
+            else
+            {
+                StreamReader sr = new StreamReader(FolderURL + "1.cs");
+                file = sr.ReadToEnd();
+                sr.Close();
+            }
+
+            int i;
+            for (i = 0; i < detectResults.Count - 1;i++)
+            {
+                if(detectResults[i].EndRow < detectResults[i].BeginRow)
+                {
+                    detectResults.Remove(detectResults[i]);
+                    i--;
+                    continue;
+                }
+                if(detectResults[i].EndRow == detectResults[i + 1].BeginRow)
+                {
+                    detectResults[i + 1].BeginRow++;
+                }
+            }
+            if (detectResults[i].EndRow < detectResults[i].BeginRow)
+            {
+                detectResults.Remove(detectResults[i]);
+            }
+
+            //呈现对应数据
+            int row = 1;
+            int pos = 0;
+            string tempString = "";
+            int color = 0;
+            foreach(var item in detectResults)
+            {
+                if(pos == file.Length)
+                {
+                    break;
+                }
+                //跳到对应的起始行
+                tempString = "";
+                while(row != item.BeginRow)
+                {
+                    if (pos == file.Length)
+                    {
+                        break;
+                    }
+                    var ch = file[pos++];
+                    if (ch == '\n')
+                    {
+                        row++;
+                    }
+                    tempString += ch;
+                }
+                if(tempString.Length > 0)
+                {
+                    displayResults.Add(new DisplayResult(tempString, "", color %= 3));
+                }
+
+                if (pos == file.Length)
+                {
+                    break;
+                }
+                tempString = "";
+                //读到终止行
+                while (row != item.EndRow)
+                {
+                    if (pos == file.Length)
+                    {
+                        break;
+                    }
+                    var ch = file[pos++];
+                    if (ch == '\n')
+                    {
+                        row++;
+                    }
+                    tempString += ch;
+                }
+                if (tempString.Length > 0)
+                {
+                    color++;
+                    displayResults.Add(new DisplayResult(tempString, item.CloneFileName, color %= 3));
+                }
+            }
             return Page();
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
-            return RedirectToPage("./Index", new { SearchUser = User, ifFind });
-        }
-
-        private bool IfFileExist()
-        {
-            bool ifRunOut = false;
-            FileInfo fp;
-            if(!IfRealUser)
+            if (ifSave)
             {
-                fp = new FileInfo("SearchData\\temp\\" + Time + "_result.txt");
-            }
-            else
-            {
-                fp = new FileInfo("SearchData\\" + User + "\\" + Time + "_result.txt");
-            }
-            DateTime begin = DateTime.Now;
-            while (!fp.Exists)
-            {
-                DateTime now = DateTime.Now;
-                if ((now - begin).Seconds >= 30)
+                var user = await _userManager.GetUserAsync(User);
+                bool firstTime = true;
+                int i = 0;
+                int j = 0;
+                for(;j < FolderURL.Length;)
                 {
-                    //若超出两分钟时间，记为超时
-                    ifRunOut = true;
-                    break;
+                    if(FolderURL[i] == '\\')
+                    {
+                        if (firstTime)
+                        {
+                            firstTime = false;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    i++;
+                    j++;
                 }
-            }
-            if (ifRunOut == true)
-            {
-                //若超时，记为查找失败，返回对应页面
-                ifFind = false;
-                return false;
-            }
-            else
-            {
-                ifFind = true;
-                return true;
-            }
-        }
-
-        private void ReadFile()
-        {
-            //保持读取
-            //判断文件是否存在
-            var temp = IfFileExist();
-            //若存在，开始读取并绑定
-            if(temp == true)
-            {
-                StreamReader sr;
-                if(!IfRealUser)
+                j++;
+                for(;FolderURL[j] != '\\'; j++)
                 {
-                    sr = new StreamReader("SearchData\\temp\\" + Time + "_result.txt");
+                    ;
                 }
-                else
-                {
-                    sr = new StreamReader("SearchData\\" + User + "\\" + Time + "_result.txt");
-                }
+                i++;
 
-                SearchCode = sr.ReadToEnd();
-                sr.Close();
+                string time = FolderURL.Substring(i, j - i);
+
+                List<string> stringList = new List<string>();
+                string tempString = "";
+                for(i = 0;i < time.Length; i++)
+                {
+                    if(time[i] == '_' || time[i] == '-')
+                    {
+                        stringList.Add(tempString);
+                        tempString = "";
+                    }
+                    else
+                    {
+                        tempString += time[i];
+                    }
+                }
+                stringList.Add(tempString);
+
+                DateTime dateTime = new DateTime(int.Parse(stringList[0]), int.Parse(stringList[1]), int.Parse(stringList[2]), 
+                    int.Parse(stringList[3]), int.Parse(stringList[4]), int.Parse(stringList[5]),int.Parse(stringList[6]));
+                _identityContext.HistorySet.Add(new History()
+                {
+                    Name = SourceCodeName,
+                    User = user,
+                    UserID = user.Id,
+                    AddTime = dateTime
+                });
+                await _identityContext.SaveChangesAsync();
             }
+            return RedirectToPage("./Index");
         }
     }
 }
